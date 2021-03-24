@@ -1,0 +1,13 @@
+annotations
+
+tests
+
+logging
+
+dockerfile
+
+database
+
+gunicorn
+
+deploy to aws as a service
