@@ -32,7 +32,7 @@ for ent in start_data.ents:
             mentions_sents[ent.text] = {
                 'count': 1,
                 'sent': [ent.sent],
-                'co_mentions': []
+                'co_mentions': {}
             }
         else:
             mentions_sents[ent.text]['count'] = mentions_sents[ent.text]['count'] + 1
@@ -45,5 +45,23 @@ for ner, elements in mentions_sents.items():
         for name in all_ner:
             if name in sent:
                 # if we want to add the count as well
-                # sent.count(name)
-                mentions_sents[ner]['co_mentions'].append(name)
+                mentions_sents[ner]['co_mentions'][name] += 1
+
+
+# think about how to divide them to 3 categories
+# add the counter, get the x most common
+# get the min and max val from it
+MIN_VAL = 0
+MAX_VAL = 0
+
+
+def calc_rank(count):
+    percentage = ((count - min_val) * 100) / (max_val - min_val)
+
+    if percentage <= 33:
+        return 3
+    elif percentage > 33 and percentage <= 66:
+        return 2
+    else:
+        return 1
+    
