@@ -1,5 +1,9 @@
 import spacy
 import re
+import json
+import sys
+import redis
+import pickle
 from collections import Counter
 FNAME = '../y_task/a_portrait_new.txt'
 
@@ -94,3 +98,10 @@ set_rank(mentions_sents)
 for entity in mentions_sents:
     print(f"Name: {entity} --> Count: {mentions_sents[entity]['count']} --> Rank: {mentions_sents[entity]['rank']}")
 
+
+r = redis.Redis(host='localhost', port=6379, db=0)
+try:
+    r.set('collection', pickle.dumps(mentions_sents))
+except redis.exceptions.ConnectionError as exc:
+    print(f'Redis is not running: {exc}')
+    sys.exit()

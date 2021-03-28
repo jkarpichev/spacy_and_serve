@@ -1,0 +1,12 @@
+version: "3.7"
+services:
+#   app: 
+#     build: app 
+#     ports: 
+#       - '5000:5000'
+   redis:
+      image: redis:alpine
+      container_name: redis_container
+      restart: always
+      ports:
+         - "6379:6379"
