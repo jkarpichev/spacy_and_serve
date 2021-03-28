@@ -2,6 +2,10 @@ Persist in redis
 
 make available to the api
 
+do the api functions
+
+set env vars
+
 annotations
 
 tests

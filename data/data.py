@@ -5,7 +5,8 @@ import sys
 import redis
 import pickle
 from collections import Counter
-FNAME = '../y_task/a_portrait_new.txt'
+
+FNAME = 'a_portrait_new.txt'
 
 
 def set_rank(collection):
