@@ -17,3 +17,11 @@ dockerfile
 gunicorn
 
 deploy to aws as a service
+
+healthcheck
+
+endpoint to reload the data
+
+endpoint to refresh the data on the server
+
+the validation
