@@ -1,4 +1,8 @@
-gunicorn
+Roadmap:
+
+document the notebook
+update the readme
+try to get the validation
 
 healthcheck
 

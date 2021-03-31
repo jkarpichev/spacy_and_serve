@@ -10,11 +10,19 @@ from collections import Counter
 from data.constants import FNAME, RANK, COUNT, PERSON, SENT, ADDITIONAL, TIMES
 from data.exceptions import MissingENVVariable
 
+# Here we use os.environ becasue we've passed the .env
+# file in the docker-compose.yml
 DB_HOST = os.environ.get('DB_HOST')
 DB_PORT = os.environ.get('DB_PORT')
 DATA_NAME = os.environ.get('DATA_NAME')
 
+
 class DataGenerator:
+    """
+    Data class that does the same work as the script and the
+    notebook, but with the difference that it gets called in
+    our app through an api call and populates redis.
+    """
 
     def set_rank(self, collection: dict, min_val: int, max_val: int) -> dict:
         """

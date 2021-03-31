@@ -30,6 +30,7 @@ def generate_data():
     """
     Route to regenerate the data collection.
     """
+    logger.info(f'CALLED FROM: {GENERATE_DATA} ENDPOINT: Generating the data collection.')
     DataGenerator().generate()
     return jsonify("The data collection has been generated")
 
@@ -39,6 +40,8 @@ def index():
     """
     Route to display all available api endpoints.
     """
+    logger.info('CALLED FROM: index ENDPOINT: Displaying all the available api endpoints.')
+
     rules = []
     for rule in app.url_map.iter_rules():
         methods = ','.join(sorted(rule.methods))
@@ -49,14 +52,16 @@ def index():
 
 @app.route(f'/{GET_CHARACTER_INFO}', methods=['GET'])
 def get_character_info(name):
-        """
-        Performs a lookup in the data collection for a
-        specific name and if we have a match returns is schema
-        Parametes:
-            name str: The name of the named entity
-        Returns:
+    """
+    Performs a lookup in the data collection for a
+    specific name and if we have a match returns is schema,
+    else it return 404 with the error
+    Parametes:
+        name str: The name of the named entity
+    Returns:
         the generate schema
-        """
+    """
+    logger.info(f'CALLED FROM: {GET_CHARACTER_INFO} ENDPOINT: Performing a lookup on an entity.')
 
     data = DataHandler().get_data()
 
@@ -79,7 +84,7 @@ def get_main_characers():
     Returns:
     The generated schema for all the main entities
     """
-    # get all main characters of rank-1
+    logger.info(f'CALLED FROM: {GET_MAIN_CHARACTERS} ENDPOINT: Displaying all the main characters.')
 
     data = DataHandler().get_data()
 
@@ -94,7 +99,13 @@ def get_main_characers():
 
 @app.route(f'/{GET_SUPPORT_CHARACTES}', methods=['GET'])
 def get_support_characters():
-    # get top 10 support characters
+    """
+    Get all the entities from the data collection
+    that have the rank = 2
+    Returns:
+    The generated schema for all the support entities
+    """
+    logger.info(f'CALLED FROM: {GET_SUPPORT_CHARACTES} ENDPOINT: Displaying all the support characters.')
 
     data = DataHandler().get_data()
 
@@ -109,7 +120,13 @@ def get_support_characters():
 
 @app.route(f'/{GET_EPISODE_CHARACTERS}', methods=['GET'])
 def get_episode_characters():
-    # get 10 random episode characters
+    """
+    Get all the entities from the data collection
+    that have the rank = 3
+    Returns:
+    The generated schema for all the episode entities
+    """
+    logger.info(f'CALLED FROM: {GET_EPISODE_CHARACTERS} ENDPOINT: Displaying all the episode characters.')
 
     data = DataHandler().get_data()
 
@@ -130,9 +147,18 @@ def get_episode_characters():
 )
 @app.route(f'/{GET_CHARACTER_MENTIONS}/<name>')
 def get_character_mentions(name):
-    # if name in names
-    # return only the name
-    # else return all the names
+    """
+    Perform a lookup for all the sentences in which
+    a character has been mentioned, if we don't have
+    a match on the name we return all the sentences
+    for the main characters
+    Parameters:
+        name str: The name of a character, could be None
+    Returns:
+    A list of all the sentences for the given character
+    or the list for every main character
+    """
+    logger.info(f'CALLED FROM: {GET_CHARACTER_MENTIONS} ENDPOINT: Displaying the sentences for a character mentions or the sentences for all main characters.')
 
     data = DataHandler().get_data()
 
@@ -155,7 +181,17 @@ def get_character_mentions(name):
 @app.route(f'/{GET_CHARACTER_CO_MENTIONS}', defaults={'name_a': None, 'name_b': None}, methods=['GET'])
 @app.route(f'/{GET_CHARACTER_CO_MENTIONS}/<name_a>/<name_b>')
 def get_characters_co_mentions(name_a, name_b):
-    
+    """
+    Display all the sentences in which we have both entities
+    else an error
+    Parameters:
+        name_a str: The name of the first character from the book
+        name_b str: The name of the second character from the book
+    Returns:
+    The list of sentences or 404
+    """
+    logger.info(f'CALLED FROM: {GET_CHARACTER_CO_MENTIONS} ENDPOINT: Displaying the sentences in which we have both character_a and character_b.')
+
     data = DataHandler().get_data()
 
     if not data:
@@ -213,7 +249,15 @@ def extract_entity(character):
     }
 
 
-def create_response_schema(characters):
+def create_response_schema(characters: dict) -> list:
+    """
+    Wrapper function that accepts a set of entities 
+    and packages them in the desired schema
+    Parametes:
+        characters dict: The collection of entities
+    Returns:
+        the list of extracted dicts
+    """
     res = []
     for character in characters:
         res.append(extract_entity(character))
@@ -222,4 +266,5 @@ def create_response_schema(characters):
 
 
 if __name__ == '__main__':
+    logger.info('::Starting the app::')
     app.run(host='0.0.0.0')
