@@ -2,14 +2,16 @@ import json
 import redis
 import pickle
 import random
+from loguru import logger
 from data.data_handler import DataHandler
+from data.data_generator import DataGenerator
 from data.constants import (RANK, SENT, COUNT, TIMES, ADDITIONAL, 
                             MENTIONS_COUNT, MONO_MENTIONS_COUNT, 
                             CO_MENTIONS_COUNT, CO_MENTIONS_NAMES, 
                             GET_CHARACTER_INFO, GET_MAIN_CHARACTERS, 
                             GET_SUPPORT_CHARACTES, GET_EPISODE_CHARACTERS, 
                             GET_CHARACTER_MENTIONS, GET_CHARACTER_CO_MENTIONS,
-                            MISSING_DATA_STR)
+                            MISSING_DATA_STR, GENERATE_DATA)
 from loguru import logger
 from flask import Flask, request, abort, jsonify
 
@@ -23,8 +25,20 @@ def get_entities(names, the_data):
     return arr
 
 
+@app.route(f'/{GENERATE_DATA}', methods=['GET'])
+def generate_data():
+    """
+    Route to regenerate the data collection.
+    """
+    DataGenerator().generate()
+    return jsonify("The data collection has been generated")
+
+
 @app.route('/')
 def index():
+    """
+    Route to display all available api endpoints.
+    """
     rules = []
     for rule in app.url_map.iter_rules():
         methods = ','.join(sorted(rule.methods))
@@ -32,9 +46,17 @@ def index():
 
     return jsonify(rules)
 
-@app.route(f'/{GET_CHARACTER_INFO}', defaults={'name': None}, methods=['GET'])
-@app.route(f'/{GET_CHARACTER_INFO}/<name>')
+
+@app.route(f'/{GET_CHARACTER_INFO}', methods=['GET'])
 def get_character_info(name):
+        """
+        Performs a lookup in the data collection for a
+        specific name and if we have a match returns is schema
+        Parametes:
+            name str: The name of the named entity
+        Returns:
+        the generate schema
+        """
 
     data = DataHandler().get_data()
 
@@ -51,6 +73,12 @@ def get_character_info(name):
 
 @app.route(f'/{GET_MAIN_CHARACTERS}', methods=['GET'])
 def get_main_characers():
+    """
+    Get all the entities from the data collection
+    that have the rank = 1
+    Returns:
+    The generated schema for all the main entities
+    """
     # get all main characters of rank-1
 
     data = DataHandler().get_data()
@@ -149,7 +177,11 @@ def get_characters_co_mentions(name_a, name_b):
 
 def extract_entity(character):
     """
-    maybe include the entity name as its not in the response
+    Package the entity info as a data schema
+    Parametes:
+        character dict: current entity from the collection
+    Returns:
+    The schema like object in the desired format
     """
     rank = character.get(RANK)
     mentions_count = character.get(COUNT)
@@ -157,20 +189,26 @@ def extract_entity(character):
         list(
             filter(lambda x: character[SENT][x][TIMES] == 1,
                    character.get(SENT))))
-    co_mentions_count = list(
-        filter(lambda x: character[SENT][x][TIMES] > 1,
-               character.get(SENT)))
-    co_mentions_names = []
 
-    for key in co_mentions_count:
-        co_mentions_names += list(
-            character.get(SENT).get(key).get(ADDITIONAL))
+    co_mentions_names = []
+    co_mentions_count = 0
+
+    # we separate the sentences for convenience
+    sentences = character[SENT]
+    for sent in sentences:
+        if len(sentences[sent][ADDITIONAL]) > 0:
+            co_mentions_count += 1
+            co_mentions_names.extend(sentences[sent][ADDITIONAL])
+
+    # we cast the list to set so that we eliminate the duplications
+    # and we cast it to list again to be json serializable
+    co_mentions_names = list(set(co_mentions_names))
 
     return {
         RANK: rank,
         MENTIONS_COUNT: mentions_count,
         MONO_MENTIONS_COUNT: mono_mentions_count,
-        CO_MENTIONS_COUNT: len(co_mentions_count),
+        CO_MENTIONS_COUNT: co_mentions_count,
         CO_MENTIONS_NAMES: co_mentions_names
     }
 

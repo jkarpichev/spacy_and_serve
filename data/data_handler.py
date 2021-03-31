@@ -36,6 +36,8 @@ class DataHandler:
             logger.warning(f'Redis has not been started: Exact Error: {exc}')
             data = None
         except TypeError as exc:
+            # catch type error for pickle.loads because if the r.get returns None
+            # we will have an error
             logger.warning(f'No data in Redis yet: Exact Error: {exc}')
             data = None
 

@@ -1,3 +1,4 @@
+import argparse
 import spacy
 import re
 import json
@@ -7,14 +8,41 @@ import pickle
 import os
 from loguru import logger
 from collections import Counter
-from constants import FNAME, RANK, COUNT, PERSON, SENT, ADDITIONAL, TIMES
+from constants import FNAME, RANK, COUNT, PERSON, SENT, ADDITIONAL, TIMES, DB_HOST, DB_PORT, DATA_NAME, DATA_FILE_JSON, DATA_FILE_PICKLE
 from exceptions import MissingENVVariable
 
 
-DB_HOST = os.environ.get('DB_HOST')
-DB_PORT = os.environ.get('DB_PORT')
-DATA_NAME = os.environ.get('DATA_NAME')
+DESCRIPTION = """
+This script generates the data in the specified format.
+It does that by reading a txt file performing some data cleaning.
+Then loading it to spacy, extracting the NER of type PERSON.
+Then we create the data skeleton.
+Then handling the guest mentions.
+Then setting the rank per entity.
+In the end we persist the data in a file.
+"""
 
+arg_parser = argparse.ArgumentParser(description=DESCRIPTION)
+arg_parser.add_argument(
+    '--save_to_pickle',
+    default=False,
+    help='Save the generated data in a pickle file.'
+)
+arg_parser.add_argument(
+    '--save_to_json',
+    default=False,
+    help='Save the generated data in a json file.'
+)
+arg_parser.add_argument(
+    '--save_to_redis',
+    default=False,
+    help='Save the generated data in a json file.'
+)
+arg_parser.add_argument(
+    '--verbose, -v',
+    default=False,
+    help='Display the end result data after the transfromation'
+)
 
 def set_rank(collection: dict, min_val: int, max_val: int) -> dict:
     """
@@ -50,21 +78,26 @@ def calc_rank(count: int, min_val, max_val) -> int:
         return 1
 
 
-def save_collection_to_redis(the_collection):
+def save_collection_to_redis(the_collection: dict):
     """
     Connect to redis and save the generated collection
     """
-    r = redis.Redis(host='localhost', port=DB_PORT)
+    r = redis.Redis(host=DB_HOST, port=DB_PORT)
     try:
         r.set(DATA_NAME, pickle.dumps(the_collection))
     except redis.exceptions.ConnectionError as exc:
         logger.warning(f'Redis is not running: Exception: {exc}.')
         sys.exit()
 
+def save_to_file(the_collection: dict, f_type: str):
+    pass
+
 
 def main():
+    args = arg_parser.parse_args()
 
     logger.info('Checking requirements...')
+    # if passed through the .env file
     if not all((DB_HOST, DB_PORT, DATA_NAME)):
         raise MissingENVVariable('One of the needed environmental variables is missing.')
 
@@ -77,7 +110,7 @@ def main():
     modded = [x for x in modded if x != '']
     joined_sentences = ' '.join(modded)
 
-    logger.info('Loadign the sentences into spacy...')
+    logger.info('Loading the sentences into spacy...')
     nlp = spacy.load("en_core_web_sm")
     start_data = nlp(joined_sentences)
 
@@ -96,7 +129,7 @@ def main():
                     COUNT: 1,
                     SENT: {
                         sent_string: {
-                            ADDITIONAL: set(),
+                            ADDITIONAL: [],
                             TIMES: sent_string.count(ent.text)
                         }
                     }
@@ -105,20 +138,20 @@ def main():
                 mentions_sents[
                     ent.text][COUNT] = mentions_sents[ent.text][COUNT] + 1
                 mentions_sents[ent.text][SENT][sent_string] = {
-                    ADDITIONAL: set(),
+                    ADDITIONAL: [],
                     TIMES: sent_string.count(ent.text)
                 }
 
     all_ner = set(
         [ent.text for ent in start_data.ents if ent.label_ == PERSON])
 
-    logger.info('Creating the guest mentions in the sentences...')
+    logger.info('Creating the guest mentions in theentences...')
     for ner, elements in mentions_sents.items():
         for k, v in elements.get(SENT).items():
             for name in all_ner:
                 if name != ner and name in k:
                     # if we want to add the count as well
-                    mentions_sents[ner][SENT][k][ADDITIONAL].add(name)
+                    mentions_sents[ner][SENT][k][ADDITIONAL].append(name)
 
     # add the counter, get the x most common
     # get the min and max val from it
@@ -132,13 +165,28 @@ def main():
     logger.info('Creating the ranks for the entities...')
     set_rank(mentions_sents, min_val, max_val)
 
-    for entity in mentions_sents:
-        print(
-            f"Name: {entity} --> Count: {mentions_sents[entity]['count']} --> Rank: {mentions_sents[entity]['rank']}"
-        )
+    # make optional for -v run argparse
+    if args.verbose:
+        for entity in mentions_sents:
+            print(
+                f"Name: {entity} --> Count: {mentions_sents[entity]['count']} --> Rank: {mentions_sents[entity]['rank']}"
+            )
 
-    logger.info('Updating Redis...')
-    save_collection_to_redis(mentions_sents)
+    logger.info('Saving the generated data in the desired format...')
+    # Depending on the arguments we pass to the script execute it accordignly
+    if args.save_to_json:
+        with open(DATA_FILE_JSON, 'w') as f:
+            json.dump(mentions_sents, f)
+        logger.info(f'Successfully saved the data to a json file: {DATA_FILE_JSON}.')
+    elif args.save_to_pickle:
+        with open(DATA_FILE_PICKLE, 'wb') as f:
+            pickle.dump(mentions_sents, f)
+        logger.info(f'Successfully saved the data to a pickle file: {DATA_FILE_PICKLE}.')
+    elif args.save_to_redis:
+        save_collection_to_redis(mentions_sents)
+        logger.info('Successfully saved the data to redis.')
+    else:
+        logger.ingo("The script didn't write the results in any form.")
 
 if __name__ == '__main__':
     main()

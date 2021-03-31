@@ -7,17 +7,14 @@ import pickle
 import os
 from loguru import logger
 from collections import Counter
-from constants import FNAME, RANK, COUNT, PERSON, SENT, ADDITIONAL, TIMES
-from exceptions import MissingENVVariable
+from data.constants import FNAME, RANK, COUNT, PERSON, SENT, ADDITIONAL, TIMES
+from data.exceptions import MissingENVVariable
 
 DB_HOST = os.environ.get('DB_HOST')
 DB_PORT = os.environ.get('DB_PORT')
 DATA_NAME = os.environ.get('DATA_NAME')
 
 class DataGenerator:
-
-    def __init__(self):
-
 
     def set_rank(self, collection: dict, min_val: int, max_val: int) -> dict:
         """
@@ -57,7 +54,7 @@ class DataGenerator:
         """
         Connect to redis and save the generated collection
         """
-        r = redis.Redis(host='localhost', port=DB_PORT)
+        r = redis.Redis(host=os.environ.get('DB_HOST'), port=os.environ.get('DB_PORT'))
         try:
             r.set(DATA_NAME, pickle.dumps(the_collection))
         except redis.exceptions.ConnectionError as exc:
@@ -66,8 +63,7 @@ class DataGenerator:
 
 
     def generate(self):
-
-        logger.info('Cdhecking requirements...')
+        logger.info('Checking requirements...')
         if not all((DB_HOST, DB_PORT, DATA_NAME)):
             raise MissingENVVariable('One of the needed environmental variables is missing.')
 
@@ -135,10 +131,8 @@ class DataGenerator:
         logger.info('Creating the ranks for the entities...')
         self.set_rank(mentions_sents, min_val, max_val)
 
-        for entity in mentions_sents:
-            print(
-                f"Name: {entity} --> Count: {mentions_sents[entity]['count']} --> Rank: {mentions_sents[entity]['rank']}"
-            )
-
         logger.info('Updating Redis...')
         self.save_collection_to_redis(mentions_sents)
+        logger.info('The data has been written to redis.')
+
+        return True

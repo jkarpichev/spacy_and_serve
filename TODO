@@ -1,22 +1,4 @@
-Persist in redis
-
-make available to the api
-
-do the api functions
-
-set env vars
-
-annotations
-
-tests
-
-logging
-
-dockerfile
-
 gunicorn
-
-deploy to aws as a service
 
 healthcheck
 

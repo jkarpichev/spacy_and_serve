@@ -4,3 +4,6 @@ if we want to run the data script we have to set the DB_HOST to 'localhost' as i
 set int .env to be run serverside
 
 Explain why im gettign the data from DataHandler().get_data() on every request
+
+COMMANDS:
+docker-compose up -d --no-deps --build
