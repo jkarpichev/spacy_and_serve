@@ -1,13 +1,14 @@
-Roadmap:
+Roadmap (next on the priorities list):
 
-document the notebook
-update the readme
-try to get the validation
+1) Fix the validation schema:
+    -- The only thing that needs to be done here is to fix the schema in the resources dir
+       then uncomment the code in the data_handler.py class so that every lookup performs
+       a validation.
 
-healthcheck
+2) Make the connection to redis reusable:
+    -- This is needed to reduce the number of running connections as with the current
+       implementation we will always create a new connection when calling an endpoint
 
-endpoint to reload the data
+3) TEST TEST TEST
 
-endpoint to refresh the data on the server
-
-the validation
+4) Add makefile, changelog

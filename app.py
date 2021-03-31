@@ -18,26 +18,13 @@ from flask import Flask, request, abort, jsonify
 app = Flask(__name__)
 
 
-def get_entities(names, the_data):
-    arr = []
-    for ent in names:
-        arr.append(the_data[ent])
-    return arr
-
-
-@app.route(f'/{GENERATE_DATA}', methods=['GET'])
-def generate_data():
+@app.route('/health')
+def health():
     """
-    Route to regenerate the data collection.
+    Super simple endpoint that indicates wherther the api is operational
+    Returns:
     """
-    # We could also run it on a separate thread
-    # from threading import Thread
-    # t = Thread(daemon=True)
-    # t.run(DataGenerator().generate())
-
-    logger.info(f'CALLED FROM: {GENERATE_DATA} ENDPOINT: Generating the data collection.')
-    DataGenerator().generate()
-    return jsonify("The data collection has been generated")
+    return jsonify('Up and running')
 
 
 @app.route('/')
@@ -53,6 +40,21 @@ def index():
         rules.append((rule.endpoint, methods, str(rule)))
 
     return jsonify(rules)
+
+
+@app.route(f'/{GENERATE_DATA}', methods=['GET'])
+def generate_data():
+    """
+    Route to regenerate the data collection.
+    """
+    # We could also run it on a separate thread
+    # from threading import Thread
+    # t = Thread(daemon=True)
+    # t.run(DataGenerator().generate())
+
+    logger.info(f'CALLED FROM: {GENERATE_DATA} ENDPOINT: Generating the data collection.')
+    DataGenerator().generate()
+    return jsonify("The data collection has been generated")
 
 @app.route(
     f'/{GET_CHARACTER_INFO}',
@@ -272,6 +274,21 @@ def create_response_schema(characters: dict) -> list:
         res.append(extract_entity(character))
 
     return res
+
+
+def get_entities(names: list, the_data: dict) -> list:
+    """
+    Extract the given entitiy names from the data
+    Parameters:
+        names list[str]: The names to be extracted
+        the_data: The collection from which to extract the names
+    Returns:
+        the extracted entities from the_data
+    """
+    entities = []
+    for ent in names:
+        entities.append(the_data[ent])
+    return entities
 
 
 if __name__ == '__main__':
