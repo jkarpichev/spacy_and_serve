@@ -132,7 +132,7 @@ def get_support_characters():
 @app.route(f'/{GET_EPISODE_CHARACTERS}', methods=['GET'])
 def get_episode_characters():
     """
-    Get all the entities from the data collection
+    Get 10 random entities from the data collection
     that have the rank = 3
     Returns:
     The generated schema for all the episode entities
@@ -207,7 +207,8 @@ def get_characters_co_mentions(name_a, name_b):
 
     if not data:
         abort(404, description=MISSING_DATA_STR)
-    if all((name_a, name_b)):
+        logger.info('Called FROM: {GET_CHARACTER_CO_MENTIONS} ENDPOINT: No data in the collection.')
+    if not all((name_a, name_b)):
         abort(404, description='Missing name argument.')
 
     sents = set()
