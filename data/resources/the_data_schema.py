@@ -7,8 +7,8 @@ the_schema = {
             'patternProperties': {
                 '^[a-z]+$': {
                     'additional': {'type': 'array'},
-                    'times': {'type': number}
+                    'times': {'type': 'number'}
             }
         }
     }
-}
+}}

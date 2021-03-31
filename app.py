@@ -30,6 +30,11 @@ def generate_data():
     """
     Route to regenerate the data collection.
     """
+    # We could also run it on a separate thread
+    # from threading import Thread
+    # t = Thread(daemon=True)
+    # t.run(DataGenerator().generate())
+
     logger.info(f'CALLED FROM: {GENERATE_DATA} ENDPOINT: Generating the data collection.')
     DataGenerator().generate()
     return jsonify("The data collection has been generated")
@@ -49,8 +54,12 @@ def index():
 
     return jsonify(rules)
 
-
-@app.route(f'/{GET_CHARACTER_INFO}', methods=['GET'])
+@app.route(
+    f'/{GET_CHARACTER_INFO}',
+    defaults={'name': None},
+    methods=['GET'],
+)
+@app.route(f'/{GET_CHARACTER_INFO}/<name>')
 def get_character_info(name):
     """
     Performs a lookup in the data collection for a
@@ -196,7 +205,7 @@ def get_characters_co_mentions(name_a, name_b):
 
     if not data:
         abort(404, description=MISSING_DATA_STR)
-    if all(name_a, name_b):
+    if all((name_a, name_b)):
         abort(404, description='Missing name argument.')
 
     sents = set()
