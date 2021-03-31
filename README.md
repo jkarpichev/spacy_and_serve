@@ -35,9 +35,5 @@ Extract data from an unstructured text using spacy and serve it through an API
 
 curl -XGET http://localhost:5000/health
 
-#### Notes
-One of the requirements wasn't implemented:
-Identify and standartise all the short forms to the full form of the name.
-
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
