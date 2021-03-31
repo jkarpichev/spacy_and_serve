@@ -88,7 +88,7 @@ def get_character_info(name):
 
 
 @app.route(f'/{GET_MAIN_CHARACTERS}', methods=['GET'])
-def get_main_characers():
+def get_main_characters():
     """
     Get all the entities from the data collection
     that have the rank = 1

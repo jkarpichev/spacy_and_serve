@@ -1,41 +1,39 @@
-Spacy and serve
-=================
+# Spacy and serve
 
-Extract data from an unstructured text and serve it through an api
+Extract data from an unstructured text using spacy and serve it through an API
 
-Usage
------
+# Usage
 
-Create virtualenv for local usage:
+#### Create virtualenv for local usage:
 
     virtualenv venv
     source venv/bin/activate
     pip install -r requirements.txt
 
-Run the server locally
-
-    python app.py
-
-Run the server through docker
-
-    docker build -t flask_app .
-    docker run
-
-Try the endpoints:
-
-    curl -XGET http://localhost:5000/health
-
-
-Docs
 ----
-if we want to run the data script we have to set the DB_HOST to 'localhost' as it's currently
-set int .env to be run serverside
+#### Ways to run the app
+1) Run the app & redis containers (recommended)
+`docker-compose up -d --build`
+* In this case an api call should be made to: http://localhost:5000/generate_data
+* That way the data will get generated and the api is ready to use
+* If not the endpoints will return an error
+* Option two is to generate the using data_generation_script.py
+2) Run the server locally
+ `python app.py`
+* In this case the `data_generation_script.py` should be used from within the data folder
+* Different parameters could be passed to the script to save the file in different ways
+* The generic way should be to use **--save_to_redis=True**
+* Or call the endpoint:  http://localhost:5000/generate_data
+3) Run the server through docker
+* uncomment the commented lines in the **Dockerfile**
+`docker build -t flask_app .`
+`docker run flask_app`
+* After that use the `data_generation_script.py` script or call the endpoint
+* **Note**! The redis container **will not** be started using this approach
+----
+#### Perform the healthcheck:
 
-Explain why im gettign the data from DataHandler().get_data() on every request
+curl -XGET http://localhost:5000/health
 
-
-if we want to run the jupyter book we have to install the "jupyter" package
-pip install jupyter
-It wasn't included in the requirements because it's not needed for the dockerised apps
-COMMANDS:
-docker-compose up -d --no-deps --build
+## License
+[MIT](https://choosealicense.com/licenses/mit/)

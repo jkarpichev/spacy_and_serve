@@ -104,20 +104,27 @@ def main():
     logger.info('Reading file...')
     input_file = open(FNAME, encoding='utf8').readlines()
 
+    # we replace all the unwanted symbols (@, #, $) and clean the text
     logger.info('Preprocessing the file...')
     pat = r'[^a-zA-z0-9.,!?/:;\"\'\s]'
     modded = [re.sub(pat, '', x.strip()) for x in input_file]
     modded = [x for x in modded if x != '']
     joined_sentences = ' '.join(modded)
 
+    # load the cleaned sentences in spacy
     logger.info('Loading the sentences into spacy...')
     nlp = spacy.load("en_core_web_sm")
     start_data = nlp(joined_sentences)
 
-    # individual sentences in which we find a given NER
+    # individual sentences in which we find a given NE record
+    # sents = [ent.sent for ent in start_data.ents if ent.text == 'Dante']
+    # print(len(sents))
+
     mentions_sents = dict()
 
     # all entities, counted and all of the sentences in which they were mentioned
+    # create the initial data schema for the entities of type PERSON
+    # that we will at some point persist in a databased
     logger.info('Restructuring the data collection per NER for each PERSON...')
     visited = []
     for ent in start_data.ents:
@@ -141,10 +148,12 @@ def main():
                     ADDITIONAL: [],
                     TIMES: sent_string.count(ent.text)
                 }
-
+    # Create a set of all the entities for the lookup below
     all_ner = set(
         [ent.text for ent in start_data.ents if ent.label_ == PERSON])
 
+    # This is making me a little bit sick (tripple nested loops)
+    # maybe implement it with generators to be faster or at least to look better
     logger.info('Creating the guest mentions in theentences...')
     for ner, elements in mentions_sents.items():
         for k, v in elements.get(SENT).items():
@@ -155,6 +164,7 @@ def main():
 
     # add the counter, get the x most common
     # get the min and max val from it
+    # we create a counter object to use the most_common method to get the entity with highest count
     items = [x.text for x in start_data.ents if x.label_ == PERSON]
     cter = Counter(items)
 
@@ -165,7 +175,7 @@ def main():
     logger.info('Creating the ranks for the entities...')
     set_rank(mentions_sents, min_val, max_val)
 
-    # make optional for -v run argparse
+    # represent the entities from the data
     if args.verbose:
         for entity in mentions_sents:
             print(
