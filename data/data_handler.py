@@ -12,7 +12,6 @@ class DataHandler:
     The data connection class.
     We initially try to establish
     """
-
     def __init__(self):
         self.data = self.connect_to_redis()
 
@@ -26,7 +25,7 @@ class DataHandler:
         if not self.data:
             self.data = self.connect_to_redis()
         return self.data
-    
+
     def validate_schema(self):
         """
         In the roadmap:
@@ -52,7 +51,8 @@ class DataHandler:
         we have no data in it.
         """
 
-        r = redis.Redis(host=os.environ.get('DB_HOST'), port=os.environ.get('DB_PORT'))
+        r = redis.Redis(host=os.environ.get('DB_HOST'),
+                        port=os.environ.get('DB_PORT'))
         try:
             data = pickle.loads(r.get(os.environ.get('DATA_NAME')))
         except redis.exceptions.ConnectionError as exc:

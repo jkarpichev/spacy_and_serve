@@ -23,7 +23,6 @@ class DataGenerator:
     notebook, but with the difference that it gets called in
     our app through an api call and populates redis.
     """
-
     def set_rank(self, collection: dict, min_val: int, max_val: int) -> dict:
         """
         Mutate the collection to set their rank
@@ -35,8 +34,8 @@ class DataGenerator:
         the modded collection in place
         """
         for entity, vals in collection.items():
-            collection[entity][RANK] = self.calc_rank(vals[COUNT], min_val, max_val)
-
+            collection[entity][RANK] = self.calc_rank(vals[COUNT], min_val,
+                                                      max_val)
 
     def calc_rank(self, count: int, min_val, max_val) -> int:
         """
@@ -57,23 +56,23 @@ class DataGenerator:
         else:
             return 1
 
-
     def save_collection_to_redis(self, the_collection):
         """
         Connect to redis and save the generated collection
         """
-        r = redis.Redis(host=os.environ.get('DB_HOST'), port=os.environ.get('DB_PORT'))
+        r = redis.Redis(host=os.environ.get('DB_HOST'),
+                        port=os.environ.get('DB_PORT'))
         try:
             r.set(DATA_NAME, pickle.dumps(the_collection))
         except redis.exceptions.ConnectionError as exc:
             logger.warning(f'Redis is not running: Exception: {exc}.')
             sys.exit()
 
-
     def generate(self):
         logger.info('Checking requirements...')
         if not all((DB_HOST, DB_PORT, DATA_NAME)):
-            raise MissingENVVariable('One of the needed environmental variables is missing.')
+            raise MissingENVVariable(
+                'One of the needed environmental variables is missing.')
 
         logger.info('Reading file...')
         input_file = open(FNAME, encoding='utf8').readlines()
@@ -92,7 +91,8 @@ class DataGenerator:
         mentions_sents = dict()
 
         # all entities, counted and all of the sentences in which they were mentioned
-        logger.info('Restructuring the data collection per NER for each PERSON...')
+        logger.info(
+            'Restructuring the data collection per NER for each PERSON...')
         visited = []
         for ent in start_data.ents:
             if ent.label_ == PERSON:

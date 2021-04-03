@@ -5,11 +5,11 @@ import random
 from loguru import logger
 from data.data_handler import DataHandler
 from data.data_generator import DataGenerator
-from data.constants import (RANK, SENT, COUNT, TIMES, ADDITIONAL, 
-                            MENTIONS_COUNT, MONO_MENTIONS_COUNT, 
-                            CO_MENTIONS_COUNT, CO_MENTIONS_NAMES, 
-                            GET_CHARACTER_INFO, GET_MAIN_CHARACTERS, 
-                            GET_SUPPORT_CHARACTES, GET_EPISODE_CHARACTERS, 
+from data.constants import (RANK, SENT, COUNT, TIMES, ADDITIONAL,
+                            MENTIONS_COUNT, MONO_MENTIONS_COUNT,
+                            CO_MENTIONS_COUNT, CO_MENTIONS_NAMES,
+                            GET_CHARACTER_INFO, GET_MAIN_CHARACTERS,
+                            GET_SUPPORT_CHARACTES, GET_EPISODE_CHARACTERS,
                             GET_CHARACTER_MENTIONS, GET_CHARACTER_CO_MENTIONS,
                             MISSING_DATA_STR, GENERATE_DATA)
 from loguru import logger
@@ -32,7 +32,9 @@ def index():
     """
     Route to display all available api endpoints.
     """
-    logger.info('CALLED FROM: index ENDPOINT: Displaying all the available api endpoints.')
+    logger.info(
+        'CALLED FROM: index ENDPOINT: Displaying all the available api endpoints.'
+    )
 
     rules = []
     for rule in app.url_map.iter_rules():
@@ -52,9 +54,12 @@ def generate_data():
     # t = Thread(daemon=True)
     # t.run(DataGenerator().generate())
 
-    logger.info(f'CALLED FROM: {GENERATE_DATA} ENDPOINT: Generating the data collection.')
+    logger.info(
+        f'CALLED FROM: {GENERATE_DATA} ENDPOINT: Generating the data collection.'
+    )
     DataGenerator().generate()
     return jsonify("The data collection has been generated")
+
 
 @app.route(
     f'/{GET_CHARACTER_INFO}',
@@ -72,7 +77,9 @@ def get_character_info(name):
     Returns:
         the generate schema
     """
-    logger.info(f'CALLED FROM: {GET_CHARACTER_INFO} ENDPOINT: Performing a lookup on an entity.')
+    logger.info(
+        f'CALLED FROM: {GET_CHARACTER_INFO} ENDPOINT: Performing a lookup on an entity.'
+    )
 
     data = DataHandler().get_data()
 
@@ -95,7 +102,9 @@ def get_main_characters():
     Returns:
     The generated schema for all the main entities
     """
-    logger.info(f'CALLED FROM: {GET_MAIN_CHARACTERS} ENDPOINT: Displaying all the main characters.')
+    logger.info(
+        f'CALLED FROM: {GET_MAIN_CHARACTERS} ENDPOINT: Displaying all the main characters.'
+    )
 
     data = DataHandler().get_data()
 
@@ -116,7 +125,9 @@ def get_support_characters():
     Returns:
     The generated schema for all the support entities
     """
-    logger.info(f'CALLED FROM: {GET_SUPPORT_CHARACTES} ENDPOINT: Displaying all the support characters.')
+    logger.info(
+        f'CALLED FROM: {GET_SUPPORT_CHARACTES} ENDPOINT: Displaying all the support characters.'
+    )
 
     data = DataHandler().get_data()
 
@@ -137,7 +148,9 @@ def get_episode_characters():
     Returns:
     The generated schema for all the episode entities
     """
-    logger.info(f'CALLED FROM: {GET_EPISODE_CHARACTERS} ENDPOINT: Displaying all the episode characters.')
+    logger.info(
+        f'CALLED FROM: {GET_EPISODE_CHARACTERS} ENDPOINT: Displaying all the episode characters.'
+    )
 
     data = DataHandler().get_data()
 
@@ -169,7 +182,9 @@ def get_character_mentions(name):
     A list of all the sentences for the given character
     or the list for every main character
     """
-    logger.info(f'CALLED FROM: {GET_CHARACTER_MENTIONS} ENDPOINT: Displaying the sentences for a character mentions or the sentences for all main characters.')
+    logger.info(
+        f'CALLED FROM: {GET_CHARACTER_MENTIONS} ENDPOINT: Displaying the sentences for a character mentions or the sentences for all main characters.'
+    )
 
     data = DataHandler().get_data()
 
@@ -189,7 +204,12 @@ def get_character_mentions(name):
     return jsonify(res)
 
 
-@app.route(f'/{GET_CHARACTER_CO_MENTIONS}', defaults={'name_a': None, 'name_b': None}, methods=['GET'])
+@app.route(f'/{GET_CHARACTER_CO_MENTIONS}',
+           defaults={
+               'name_a': None,
+               'name_b': None
+           },
+           methods=['GET'])
 @app.route(f'/{GET_CHARACTER_CO_MENTIONS}/<name_a>/<name_b>')
 def get_characters_co_mentions(name_a, name_b):
     """
@@ -201,13 +221,17 @@ def get_characters_co_mentions(name_a, name_b):
     Returns:
     The list of sentences or 404
     """
-    logger.info(f'CALLED FROM: {GET_CHARACTER_CO_MENTIONS} ENDPOINT: Displaying the sentences in which we have both character_a and character_b.')
+    logger.info(
+        f'CALLED FROM: {GET_CHARACTER_CO_MENTIONS} ENDPOINT: Displaying the sentences in which we have both character_a and character_b.'
+    )
 
     data = DataHandler().get_data()
 
     if not data:
         abort(404, description=MISSING_DATA_STR)
-        logger.info('Called FROM: {GET_CHARACTER_CO_MENTIONS} ENDPOINT: No data in the collection.')
+        logger.info(
+            'Called FROM: {GET_CHARACTER_CO_MENTIONS} ENDPOINT: No data in the collection.'
+        )
     if not all((name_a, name_b)):
         abort(404, description='Missing name argument.')
 

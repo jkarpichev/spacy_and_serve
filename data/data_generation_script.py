@@ -11,7 +11,6 @@ from collections import Counter
 from constants import FNAME, RANK, COUNT, PERSON, SENT, ADDITIONAL, TIMES, DB_HOST, DB_PORT, DATA_NAME, DATA_FILE_JSON, DATA_FILE_PICKLE
 from exceptions import MissingENVVariable
 
-
 DESCRIPTION = """
 This script generates the data in the specified format.
 It does that by reading a txt file performing some data cleaning.
@@ -23,26 +22,20 @@ In the end we persist the data in a file.
 """
 
 arg_parser = argparse.ArgumentParser(description=DESCRIPTION)
-arg_parser.add_argument(
-    '--save_to_pickle',
-    default=False,
-    help='Save the generated data in a pickle file.'
-)
-arg_parser.add_argument(
-    '--save_to_json',
-    default=False,
-    help='Save the generated data in a json file.'
-)
-arg_parser.add_argument(
-    '--save_to_redis',
-    default=False,
-    help='Save the generated data in a json file.'
-)
+arg_parser.add_argument('--save_to_pickle',
+                        default=False,
+                        help='Save the generated data in a pickle file.')
+arg_parser.add_argument('--save_to_json',
+                        default=False,
+                        help='Save the generated data in a json file.')
+arg_parser.add_argument('--save_to_redis',
+                        default=False,
+                        help='Save the generated data in a json file.')
 arg_parser.add_argument(
     '--verbose, -v',
     default=False,
-    help='Display the end result data after the transfromation'
-)
+    help='Display the end result data after the transfromation')
+
 
 def set_rank(collection: dict, min_val: int, max_val: int) -> dict:
     """
@@ -89,6 +82,7 @@ def save_collection_to_redis(the_collection: dict):
         logger.warning(f'Redis is not running: Exception: {exc}.')
         sys.exit()
 
+
 def save_to_file(the_collection: dict, f_type: str):
     pass
 
@@ -99,7 +93,8 @@ def main():
     logger.info('Checking requirements...')
     # if passed through the .env file
     if not all((DB_HOST, DB_PORT, DATA_NAME)):
-        raise MissingENVVariable('One of the needed environmental variables is missing.')
+        raise MissingENVVariable(
+            'One of the needed environmental variables is missing.')
 
     logger.info('Reading file...')
     input_file = open(FNAME, encoding='utf8').readlines()
@@ -187,16 +182,20 @@ def main():
     if args.save_to_json:
         with open(DATA_FILE_JSON, 'w') as f:
             json.dump(mentions_sents, f)
-        logger.info(f'Successfully saved the data to a json file: {DATA_FILE_JSON}.')
+        logger.info(
+            f'Successfully saved the data to a json file: {DATA_FILE_JSON}.')
     elif args.save_to_pickle:
         with open(DATA_FILE_PICKLE, 'wb') as f:
             pickle.dump(mentions_sents, f)
-        logger.info(f'Successfully saved the data to a pickle file: {DATA_FILE_PICKLE}.')
+        logger.info(
+            f'Successfully saved the data to a pickle file: {DATA_FILE_PICKLE}.'
+        )
     elif args.save_to_redis:
         save_collection_to_redis(mentions_sents)
         logger.info('Successfully saved the data to redis.')
     else:
         logger.ingo("The script didn't write the results in any form.")
+
 
 if __name__ == '__main__':
     main()
