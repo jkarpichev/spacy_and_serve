@@ -32,7 +32,7 @@ arg_parser.add_argument('--save_to_redis',
                         default=False,
                         help='Save the generated data in a json file.')
 arg_parser.add_argument(
-    '--verbose, -v',
+    '--verbose',
     default=False,
     help='Display the end result data after the transfromation')
 
@@ -194,7 +194,7 @@ def main():
         save_collection_to_redis(mentions_sents)
         logger.info('Successfully saved the data to redis.')
     else:
-        logger.ingo("The script didn't write the results in any form.")
+        logger.info("The script didn't write the results in any form.")
 
 
 if __name__ == '__main__':
